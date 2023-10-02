@@ -108,6 +108,8 @@ require('lazy').setup({
       'rafamadriz/friendly-snippets',
     },
   },
+  -- Simple auto close plugin.
+  { 'm4xshen/autoclose.nvim' },
 
   -- Useful plugin to show you pending keybinds.
   { 'folke/which-key.nvim', opts = {} },
@@ -144,11 +146,19 @@ require('lazy').setup({
 
   {
     -- Theme inspired by Atom
-    'navarasu/onedark.nvim',
+    'nyoom-engineering/oxocarbon.nvim',
     priority = 1000,
     config = function()
-      vim.cmd.colorscheme 'onedark'
+      vim.cmd.colorscheme 'oxocarbon'
     end,
+  },
+
+  {
+    'akinsho/bufferline.nvim',
+    version = "*",
+    dependencies = {
+      'nvim-tree/nvim-web-devicons'
+    }
   },
 
   {
@@ -158,11 +168,18 @@ require('lazy').setup({
     opts = {
       options = {
         icons_enabled = false,
-        theme = 'onedark',
+        theme = 'auto',
         component_separators = '|',
         section_separators = '',
       },
     },
+  },
+
+  {
+    'nvim-tree/nvim-tree.lua',
+    dependencies = {
+      'nvim-tree/nvim-web-devicons'
+    }
   },
 
   {
@@ -263,6 +280,10 @@ vim.o.completeopt = 'menuone,noselect'
 -- NOTE: You should make sure your terminal supports this
 vim.o.termguicolors = true
 
+-- Disable netrw for nvim-tree
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
 -- [[ Basic Keymaps ]]
 
 -- Keymaps for better default experience
@@ -283,6 +304,37 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = highlight_group,
   pattern = '*',
 })
+
+-- [[ autoclose ]]
+require('autoclose').setup {
+  keys = {
+    ["<"] = { escape = false, close = true, pair = "<>" },
+  }
+}
+
+-- [[ Bufferline ]]
+require('bufferline').setup()
+
+-- [[ nvim-tree ]]
+require('nvim-tree').setup {
+  sort_by = "case_sensitive",
+  view = {
+    adaptive_size = true,
+    number = true,
+    side = 'right',
+    width = 30,
+  },
+  renderer = {
+    group_empty = true,
+    highlight_git = true,
+    highlight_opened_files = "all",
+  },
+  actions = {
+    open_file = {
+      quit_on_open = true,
+    }
+  }
+}
 
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
