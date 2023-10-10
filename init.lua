@@ -144,12 +144,26 @@ require('lazy').setup({
     },
   },
 
+  -- Themes
   {
-    -- Theme inspired by Atom
-    'nyoom-engineering/oxocarbon.nvim',
+    'rose-pine/neovim',
+    -- 'nyoom-engineering/oxocarbon.nvim',
+    -- 'folke/tokyonight.nvim',
     priority = 1000,
     config = function()
-      vim.cmd.colorscheme 'oxocarbon'
+      vim.cmd.colorscheme 'rose-pine'
+      -- vim.cmd.colorscheme 'tokyonight'
+      -- vim.o.background = "dark"
+    end,
+  },
+
+  -- Editor plugins
+  { 'folke/trouble.nvim', opts = {} },
+  { 'folke/zen-mode.nvim', opts = {} },
+  { 'theprimeagen/harpoon', opts = {} },
+  {
+    'mbbill/undotree',
+    config = function()
     end,
   },
 
@@ -175,12 +189,12 @@ require('lazy').setup({
     },
   },
 
-  {
-    'nvim-tree/nvim-tree.lua',
-    dependencies = {
-      'nvim-tree/nvim-web-devicons'
-    }
-  },
+  -- {
+  --   'nvim-tree/nvim-tree.lua',
+  --   dependencies = {
+  --     'nvim-tree/nvim-web-devicons'
+  --   }
+  -- },
 
   {
     -- Add indentation guides even on blank lines
@@ -245,12 +259,24 @@ require('lazy').setup({
 
 -- Set highlight on search
 vim.o.hlsearch = false
+vim.o.incsearch = true
 
 -- Make line numbers default
 vim.wo.number = true
+vim.o.nu = true
+-- Make line numbers relative
+vim.o.relativenumber = true
 
 -- Enable mouse mode
 vim.o.mouse = 'a'
+
+-- tabs
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
+
+vim.opt.smartindent = true
 
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
@@ -260,6 +286,9 @@ vim.o.clipboard = 'unnamedplus'
 -- Enable break indent
 vim.o.breakindent = true
 
+vim.o.swapfile = false
+vim.o.backup = false
+vim.o.undodir = os.getenv("HOME") .. "/.vim/undodir"
 -- Save undo history
 vim.o.undofile = true
 
@@ -269,9 +298,10 @@ vim.o.smartcase = true
 
 -- Keep signcolumn on by default
 vim.wo.signcolumn = 'yes'
+vim.wo.scrolloff = 8
 
 -- Decrease update time
-vim.o.updatetime = 250
+vim.o.updatetime = 50
 vim.o.timeoutlen = 300
 
 -- Set completeopt to have a better completion experience
@@ -280,9 +310,13 @@ vim.o.completeopt = 'menuone,noselect'
 -- NOTE: You should make sure your terminal supports this
 vim.o.termguicolors = true
 
--- Disable netrw for nvim-tree
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
+-- Show character column
+vim.o.colorcolumn = '80'
+
+-- Open netrw by default
+vim.g.netrw_browse_split = 0
+vim.g.netrw_banner = 0
+vim.g.netrw_win_size = 25
 
 -- [[ Basic Keymaps ]]
 
@@ -293,6 +327,9 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 -- Remap for dealing with word wrap
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+
+-- greatest remap ever
+vim.keymap.set("x", "<leader>p", [["_dP]])
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -305,6 +342,15 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   pattern = '*',
 })
 
+-- [[ Themes ]]
+require('rose-pine').setup({
+  disable_background = true
+})
+-- require('tokyonight').setup {
+--  style = 'night',
+--  terminal_colors = true
+-- }
+
 -- [[ autoclose ]]
 require('autoclose').setup {
   keys = {
@@ -316,25 +362,74 @@ require('autoclose').setup {
 require('bufferline').setup()
 
 -- [[ nvim-tree ]]
-require('nvim-tree').setup {
-  sort_by = "case_sensitive",
-  view = {
-    adaptive_size = true,
-    number = true,
-    side = 'right',
-    width = 30,
-  },
-  renderer = {
-    group_empty = true,
-    highlight_git = true,
-    highlight_opened_files = "all",
-  },
-  actions = {
-    open_file = {
-      quit_on_open = true,
-    }
-  }
+-- Disable netrw for nvim-tree
+-- vim.g.loaded_netrw = 1
+-- vim.g.loaded_netrwPlugin = 1
+-- require('nvim-tree').setup {
+--   sort_by = "case_sensitive",
+--   view = {
+--     adaptive_size = true,
+--     number = true,
+--     side = 'right',
+--     width = 30,
+--   },
+--   renderer = {
+--     group_empty = true,
+--     highlight_git = true,
+--     highlight_opened_files = "all",
+--   },
+--   actions = {
+--     open_file = {
+--       quit_on_open = true,
+--     }
+--   }
+-- }
+
+
+-- [[ Trouble ]]
+require('trouble').setup {
+  icons = false
 }
+vim.keymap.set("n", "<leader>xq", "<cmd>TroubleToggle quickfix<cr>",
+  {silent = true, noremap = true}
+)
+
+-- [[ Fugitive ]]
+vim.keymap.set("n", "<leader>gs", vim.cmd.Git)
+
+-- [[ Undotree ]]
+vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle)
+
+-- [[ Zenmode ]]
+vim.keymap.set("n", "<leader>zz", function()
+    require("zen-mode").setup {
+        window = {
+            width = 90,
+            options = { }
+        },
+    }
+    require("zen-mode").toggle()
+    vim.wo.wrap = false
+    vim.wo.number = true
+    vim.wo.rnu = true
+    -- ColorMyPencils()
+end)
+
+
+vim.keymap.set("n", "<leader>zZ", function()
+    require("zen-mode").setup {
+        window = {
+            width = 90,
+            options = { }
+        },
+    }
+    require("zen-mode").toggle()
+    vim.wo.wrap = false
+    vim.wo.number = false
+    vim.wo.rnu = false
+    vim.opt.colorcolumn = "0"
+    -- ColorMyPencils()
+end)
 
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
@@ -370,6 +465,7 @@ vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { de
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
 vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
 vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = '[S]earch [R]esume' })
+vim.keymap.set('n', '<C-p>', require('telescope.builtin').git_files, { desc = 'Search Git Files' })
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -377,11 +473,14 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 vim.defer_fn(function()
   require('nvim-treesitter.configs').setup {
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim' },
-  
+    ensure_installed = { 'c', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc' },
+
+    -- Install parses synchronously (only applied to `ensure_installed`)
+    sync_install = false,
+
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
-    auto_install = false,
-  
+    auto_install = true,
+
     highlight = { enable = true },
     indent = { enable = true },
     incremental_selection = {
