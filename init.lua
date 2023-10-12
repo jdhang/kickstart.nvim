@@ -169,13 +169,13 @@ require('lazy').setup({
     config = function() end,
   },
 
-  {
-    'akinsho/bufferline.nvim',
-    version = "*",
-    dependencies = {
-      'nvim-tree/nvim-web-devicons'
-    }
-  },
+  -- {
+  --   'akinsho/bufferline.nvim',
+  --   version = "*",
+  --   dependencies = {
+  --     'nvim-tree/nvim-web-devicons'
+  --   }
+  -- },
 
   {
     -- Set lualine as statusline
@@ -388,7 +388,7 @@ require('autoclose').setup {
 }
 
 -- [[ Bufferline ]]
-require('bufferline').setup()
+-- require('bufferline').setup()
 
 -- [[ nvim-tree ]]
 -- Disable netrw for nvim-tree
@@ -413,7 +413,6 @@ require('bufferline').setup()
 --     }
 --   }
 -- }
-
 
 -- [[ Trouble ]]
 require('trouble').setup {
