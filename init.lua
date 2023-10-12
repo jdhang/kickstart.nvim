@@ -159,8 +159,11 @@ require('lazy').setup({
 
   -- Editor plugins
   { 'folke/trouble.nvim', opts = {} },
+
   { 'folke/zen-mode.nvim', opts = {} },
+
   { 'theprimeagen/harpoon', opts = {} },
+
   {
     'mbbill/undotree',
     config = function() end,
@@ -212,6 +215,18 @@ require('lazy').setup({
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
 
+  -- surround selection
+  {
+    "kylechui/nvim-surround",
+    version = "*", -- Use for stability; omit to use `main` branch for the latest features
+    event = "VeryLazy",
+    config = function()
+      require("nvim-surround").setup({
+        -- Configuration here, or leave empty to use defaults
+      })
+    end
+  },
+
   -- Fuzzy Finder (files, lsp, etc)
   {
     'nvim-telescope/telescope.nvim',
@@ -241,6 +256,8 @@ require('lazy').setup({
     },
     build = ':TSUpdate',
   },
+
+  { 'nvim-treesitter/nvim-treesitter-context', opts = {} },
 
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
