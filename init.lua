@@ -459,6 +459,12 @@ vim.keymap.set("n", "<leader>zZ", function()
     -- ColorMyPencils()
 end)
 
+-- [[ Harpoon ]]
+vim.keymap.set('n', '<leader>ha', require('harpoon.mark').add_file, { desc = '[H]arpoon - [A]dd file' })
+vim.keymap.set('n', '<leader>hn', require('harpoon.ui').nav_next, { desc = '[H]arpoon - [N]ext file' })
+vim.keymap.set('n', '<leader>hp', require('harpoon.ui').nav_prev, { desc = '[H]arpoon - [P]revious file' })
+vim.keymap.set('n', '<leader>hf', '<Cmd>Telescope harpoon marks<CR>', { desc = '[H]arpoon - [F]ind files' })
+
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
 require('telescope').setup {
@@ -471,6 +477,8 @@ require('telescope').setup {
     },
   },
 }
+require("telescope").load_extension('harpoon')
+
 
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
