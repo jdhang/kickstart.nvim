@@ -53,7 +53,7 @@ if not vim.loop.fs_stat(lazypath) then
     'clone',
     '--filter=blob:none',
     'https://github.com/folke/lazy.nvim.git',
-    '--branch=stable', -- latest stable release
+    '--branch=stable',     -- latest stable release
     lazypath,
   }
 end
@@ -86,7 +86,7 @@ require('lazy').setup({
 
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', tag = 'legacy', opts = {} },
+      { 'j-hui/fidget.nvim',       tag = 'legacy', opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
@@ -109,7 +109,7 @@ require('lazy').setup({
     },
   },
   -- Simple auto close plugin.
-  { 'm4xshen/autoclose.nvim' },
+  -- { 'm4xshen/autoclose.nvim' },
 
   -- Useful plugin to show you pending keybinds.
   { 'folke/which-key.nvim', opts = {} },
@@ -126,20 +126,21 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
       on_attach = function(bufnr)
-        vim.keymap.set('n', '<leader>hp', require('gitsigns').preview_hunk, { buffer = bufnr, desc = 'Preview git hunk' })
+        vim.keymap.set('n', '<leader>hp', require('gitsigns').preview_hunk,
+          { buffer = bufnr, desc = 'Preview git hunk' })
 
         -- don't override the built-in and fugitive keymaps
         local gs = package.loaded.gitsigns
-        vim.keymap.set({'n', 'v'}, ']c', function()
+        vim.keymap.set({ 'n', 'v' }, ']c', function()
           if vim.wo.diff then return ']c' end
           vim.schedule(function() gs.next_hunk() end)
           return '<Ignore>'
-        end, {expr=true, buffer = bufnr, desc = "Jump to next hunk"})
-        vim.keymap.set({'n', 'v'}, '[c', function()
+        end, { expr = true, buffer = bufnr, desc = "Jump to next hunk" })
+        vim.keymap.set({ 'n', 'v' }, '[c', function()
           if vim.wo.diff then return '[c' end
           vim.schedule(function() gs.prev_hunk() end)
           return '<Ignore>'
-        end, {expr=true, buffer = bufnr, desc = "Jump to previous hunk"})
+        end, { expr = true, buffer = bufnr, desc = "Jump to previous hunk" })
       end,
     },
   },
@@ -157,10 +158,17 @@ require('lazy').setup({
     end,
   },
 
-  -- Editor plugins
-  { 'folke/trouble.nvim', opts = {} },
+  -- Language support
+  {
+    'pmizio/typescript-tools.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+    opts = {},
+  },
 
-  { 'folke/zen-mode.nvim', opts = {} },
+  -- Editor plugins
+  { 'folke/trouble.nvim',   opts = {} },
+
+  { 'folke/zen-mode.nvim',  opts = {} },
 
   { 'theprimeagen/harpoon', opts = {} },
 
@@ -213,12 +221,12 @@ require('lazy').setup({
   },
 
   -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim', opts = {} },
+  { 'numToStr/Comment.nvim',                   opts = {} },
 
   -- surround selection
   {
     "kylechui/nvim-surround",
-    version = "*", -- Use for stability; omit to use `main` branch for the latest features
+    version = "*",     -- Use for stability; omit to use `main` branch for the latest features
     event = "VeryLazy",
     config = function()
       require("nvim-surround").setup({
@@ -258,6 +266,11 @@ require('lazy').setup({
   },
 
   { 'nvim-treesitter/nvim-treesitter-context', opts = {} },
+  {
+    'nvim-treesitter/playground',
+    config = function() end,
+    opts = {}
+  },
 
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
@@ -277,6 +290,9 @@ require('lazy').setup({
 -- [[ Setting options ]]
 -- See `:help vim.o`
 -- NOTE: You can change these options as you wish!
+
+-- fat cursor
+vim.opt.guicursor = ""
 
 -- Set highlight on search
 vim.o.hlsearch = false
@@ -302,15 +318,15 @@ vim.opt.smartindent = true
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
-vim.o.clipboard = 'unnamedplus'
+-- vim.o.clipboard = 'unnamedplus'
 
 -- Enable break indent
 vim.o.breakindent = true
 
+-- Save undo history
 vim.o.swapfile = false
 vim.o.backup = false
 vim.o.undodir = os.getenv("HOME") .. "/.vim/undodir"
--- Save undo history
 vim.o.undofile = true
 
 -- Case-insensitive searching UNLESS \C or capital in search
@@ -349,16 +365,34 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
+-- theprimeagen remaps
+vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
+
+vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
+vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
+
+vim.keymap.set("n", "J", "mzJ`z")
+vim.keymap.set("n", "<C-d>", "<C-d>zz")
+vim.keymap.set("n", "<C-u>", "<C-u>zz")
+vim.keymap.set("n", "n", "nzzzv")
+vim.keymap.set("n", "N", "Nzzzv")
+
 -- greatest remap ever
 vim.keymap.set('x', '<leader>p', [["_dP]])
 
-vim.keymap.set({'n', 'v'}, '<leader>y', [["+y]])
+vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]])
 vim.keymap.set('n', '<leader>Y', [["+Y]])
 
-vim.keymap.set({'n', 'v'}, '<leader>d', [["_d]])
+vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]])
 
+
+vim.keymap.set('n', 'Q', '<nop>')
+vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
 -- format
 vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
+
+-- [[ autoformat on save ]]
+-- vim.cmd [[autocmd BufWritePre * lua vim.lsp.buf.format()]]
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -372,6 +406,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 })
 
 -- [[ Themes ]]
+vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
+vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'none' })
 require('rose-pine').setup({
   disable_background = true
 })
@@ -381,11 +417,11 @@ require('rose-pine').setup({
 -- }
 
 -- [[ autoclose ]]
-require('autoclose').setup {
-  keys = {
-    ["<"] = { escape = false, close = true, pair = "<>" },
-  }
-}
+-- require('autoclose').setup {
+--   keys = {
+--     ["<"] = { escape = false, close = true, pair = "<>" },
+--   }
+-- }
 
 -- [[ Bufferline ]]
 -- require('bufferline').setup()
@@ -419,7 +455,7 @@ require('trouble').setup {
   icons = false
 }
 vim.keymap.set("n", "<leader>xq", "<cmd>TroubleToggle quickfix<cr>",
-  {silent = true, noremap = true}
+  { silent = true, noremap = true }
 )
 
 -- [[ Fugitive ]]
@@ -430,39 +466,39 @@ vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle)
 
 -- [[ Zenmode ]]
 vim.keymap.set("n", "<leader>zz", function()
-    require("zen-mode").setup {
-        window = {
-            width = 90,
-            options = { }
-        },
-    }
-    require("zen-mode").toggle()
-    vim.wo.wrap = false
-    vim.wo.number = true
-    vim.wo.rnu = true
-    -- ColorMyPencils()
+  require("zen-mode").setup {
+    window = {
+      width = 90,
+      options = {}
+    },
+  }
+  require("zen-mode").toggle()
+  vim.wo.wrap = false
+  vim.wo.number = true
+  vim.wo.rnu = true
+  -- ColorMyPencils()
 end)
 
 
 vim.keymap.set("n", "<leader>zZ", function()
-    require("zen-mode").setup {
-        window = {
-            width = 90,
-            options = { }
-        },
-    }
-    require("zen-mode").toggle()
-    vim.wo.wrap = false
-    vim.wo.number = false
-    vim.wo.rnu = false
-    vim.opt.colorcolumn = "0"
-    -- ColorMyPencils()
+  require("zen-mode").setup {
+    window = {
+      width = 90,
+      options = {}
+    },
+  }
+  require("zen-mode").toggle()
+  vim.wo.wrap = false
+  vim.wo.number = false
+  vim.wo.rnu = false
+  vim.opt.colorcolumn = "0"
+  -- ColorMyPencils()
 end)
 
 -- [[ Harpoon ]]
 vim.keymap.set('n', '<leader>ha', require('harpoon.mark').add_file, { desc = '[H]arpoon - [A]dd file' })
 vim.keymap.set('n', '<leader>hn', require('harpoon.ui').nav_next, { desc = '[H]arpoon - [N]ext file' })
-vim.keymap.set('n', '<leader>hp', require('harpoon.ui').nav_prev, { desc = '[H]arpoon - [P]revious file' })
+vim.keymap.set('n', '<leader>hm', require('harpoon.ui').nav_prev, { desc = '[H]arpoon - [P]revious file' })
 vim.keymap.set('n', '<leader>hf', '<Cmd>Telescope harpoon marks<CR>', { desc = '[H]arpoon - [F]ind files' })
 
 -- [[ Configure Telescope ]]
@@ -531,7 +567,7 @@ vim.defer_fn(function()
     textobjects = {
       select = {
         enable = true,
-        lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
+        lookahead = true,         -- Automatically jump forward to textobj, similar to targets.vim
         keymaps = {
           -- You can use the capture groups defined in textobjects.scm
           ['aa'] = '@parameter.outer',
@@ -544,7 +580,7 @@ vim.defer_fn(function()
       },
       move = {
         enable = true,
-        set_jumps = true, -- whether to set jumps in the jumplist
+        set_jumps = true,         -- whether to set jumps in the jumplist
         goto_next_start = {
           [']m'] = '@function.outer',
           [']]'] = '@class.outer',
@@ -650,9 +686,9 @@ local servers = {
   -- gopls = {},
   -- pyright = {},
   -- rust_analyzer = {},
-  -- tsserver = {},
+  tsserver = { filetypes = { 'ts', 'tsx' } },
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
-
+  --
   lua_ls = {
     Lua = {
       workspace = { checkThirdParty = false },
