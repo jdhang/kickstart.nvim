@@ -53,7 +53,7 @@ if not vim.loop.fs_stat(lazypath) then
     'clone',
     '--filter=blob:none',
     'https://github.com/folke/lazy.nvim.git',
-    '--branch=stable',     -- latest stable release
+    '--branch=stable', -- latest stable release
     lazypath,
   }
 end
@@ -90,6 +90,9 @@ require('lazy').setup({
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
+
+      -- null-ls for prettier
+      'jose-elias-alvarez/null-ls.nvim'
     },
   },
 
@@ -165,6 +168,18 @@ require('lazy').setup({
     opts = {},
   },
 
+  { 'windwp/nvim-ts-autotag', opts = {} },
+
+  {
+    'jancodes/jest.nvim',
+    opts = {
+      jest_cmd = 'yarn test',
+    },
+  },
+
+  -- Formatter
+  { 'MunifTanjim/prettier.nvim', opts = {} },
+
   -- Editor plugins
   { 'folke/trouble.nvim',   opts = {} },
 
@@ -226,7 +241,7 @@ require('lazy').setup({
   -- surround selection
   {
     "kylechui/nvim-surround",
-    version = "*",     -- Use for stability; omit to use `main` branch for the latest features
+    version = "*", -- Use for stability; omit to use `main` branch for the latest features
     event = "VeryLazy",
     config = function()
       require("nvim-surround").setup({
@@ -261,6 +276,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     dependencies = {
       'nvim-treesitter/nvim-treesitter-textobjects',
+      'JoosepAlviste/nvim-ts-context-commentstring',
     },
     build = ':TSUpdate',
   },
@@ -390,6 +406,8 @@ vim.keymap.set('n', 'Q', '<nop>')
 vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
 -- format
 vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
+vim.keymap.set("n", "<leader>ff", '<cmd>silent %!prettier --stdin-filepath %<CR>')
+vim.keymap.set("n", "<leader>fw", '<cmd>silent %!prettier --stdin-filepath %<CR><cmd>write<CR>')
 
 -- [[ autoformat on save ]]
 -- vim.cmd [[autocmd BufWritePre * lua vim.lsp.buf.format()]]
@@ -545,7 +563,7 @@ vim.keymap.set('n', '<C-p>', require('telescope.builtin').git_files, { desc = 'S
 vim.defer_fn(function()
   require('nvim-treesitter.configs').setup {
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc' },
+    ensure_installed = { 'c', 'go', 'lua', 'python', 'rust', 'javascript', 'typescript', 'tsx', 'vimdoc' },
 
     -- Install parses synchronously (only applied to `ensure_installed`)
     sync_install = false,
@@ -567,7 +585,7 @@ vim.defer_fn(function()
     textobjects = {
       select = {
         enable = true,
-        lookahead = true,         -- Automatically jump forward to textobj, similar to targets.vim
+        lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
         keymaps = {
           -- You can use the capture groups defined in textobjects.scm
           ['aa'] = '@parameter.outer',
@@ -580,7 +598,7 @@ vim.defer_fn(function()
       },
       move = {
         enable = true,
-        set_jumps = true,         -- whether to set jumps in the jumplist
+        set_jumps = true, -- whether to set jumps in the jumplist
         goto_next_start = {
           [']m'] = '@function.outer',
           [']]'] = '@class.outer',
@@ -616,6 +634,93 @@ vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous dia
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
+
+-- [[ Configure null-ls ]]
+local null_ls = require("null-ls")
+
+local group = vim.api.nvim_create_augroup("lsp_format_on_save", { clear = false })
+local event = "BufWritePre" -- or "BufWritePost"
+local async = event == "BufWritePost"
+-- local formatter = null_ls.builtins.formatting
+-- local diagnostics = null_ls.builtins.diagnostics
+-- local actions = null_ls.builtins.code_actions
+
+null_ls.setup({
+  -- sources = {
+  --   -- Formatters
+  --   formatter.eslint_d,
+  --
+  --   -- Diagnostics
+  --   diagnostics.eslint_d,
+  --
+  --   -- Code actions
+  --   actions.eslint_d,
+  --
+  --   formatter.prettierd.with({
+  --     filetypes = {
+  --       "css",
+  --       "html",
+  --       "yaml",
+  --       "markdown",
+  --       "json",
+  --       "javascript",
+  --       "javascriptreact",
+  --       "typescript",
+  --       "typescriptreact",
+  --     },
+  --     args = {
+  --       "--stdin-filepath",
+  --       "$FILENAME",
+  --     }
+  --   }),
+  -- },
+
+  on_attach = function(client, bufnr)
+  if client.supports_method("textDocument/formatting") then
+      vim.keymap.set("n", "<Leader>f", function()
+        vim.lsp.buf.format({ bufnr = vim.api.nvim_get_current_buf() })
+      end, { buffer = bufnr, desc = "[lsp] format" })
+
+      -- format on save
+      vim.api.nvim_clear_autocmds({ buffer = bufnr, group = group })
+      vim.api.nvim_create_autocmd(event, {
+        buffer = bufnr,
+        group = group,
+        callback = function()
+          vim.lsp.buf.format({ bufnr = bufnr, async = async })
+        end,
+        desc = "[lsp] format on save",
+      })
+    end
+
+    if client.supports_method("textDocument/rangeFormatting") then
+      vim.keymap.set("x", "<Leader>f", function()
+        vim.lsp.buf.format({ bufnr = vim.api.nvim_get_current_buf() })
+      end, { buffer = bufnr, desc = "[lsp] format" })
+    end
+  end,
+})
+
+-- [[ Configure prettier.nvim ]]
+local prettier = require("prettier")
+
+prettier.setup({
+  bin = 'prettierd', -- or `'prettierd'` (v0.23.3+)
+  filetypes = {
+    "css",
+    "graphql",
+    "html",
+    "javascript",
+    "javascriptreact",
+    "json",
+    "less",
+    "markdown",
+    "scss",
+    "typescript",
+    "typescriptreact",
+    "yaml",
+  },
+})
 
 -- [[ Configure LSP ]]
 --  This function gets run when an LSP connects to a particular buffer.
@@ -686,9 +791,9 @@ local servers = {
   -- gopls = {},
   -- pyright = {},
   -- rust_analyzer = {},
-  tsserver = { filetypes = { 'ts', 'tsx' } },
-  -- html = { filetypes = { 'html', 'twig', 'hbs'} },
-  --
+  tsserver = {},
+  html = { filetypes = { 'html', 'twig', 'hbs'} },
+
   lua_ls = {
     Lua = {
       workspace = { checkThirdParty = false },
