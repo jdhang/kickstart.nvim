@@ -115,7 +115,7 @@ require('lazy').setup({
   -- { 'm4xshen/autoclose.nvim' },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
+  { 'folke/which-key.nvim',   opts = {} },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -178,7 +178,7 @@ require('lazy').setup({
   },
 
   -- Formatter
-  { 'MunifTanjim/prettier.nvim', opts = {} },
+  -- { 'MunifTanjim/prettier.nvim', opts = {} },
 
   -- Editor plugins
   { 'folke/trouble.nvim',   opts = {} },
@@ -324,11 +324,12 @@ vim.o.relativenumber = true
 vim.o.mouse = 'a'
 
 -- tabs
-vim.opt.tabstop = 4
-vim.opt.softtabstop = 4
-vim.opt.shiftwidth = 4
+vim.opt.tabstop = 2
+vim.opt.softtabstop = 2
+vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 
+vim.opt.autoindent = true
 vim.opt.smartindent = true
 
 -- Sync clipboard between OS and Neovim.
@@ -401,13 +402,13 @@ vim.keymap.set('n', '<leader>Y', [["+Y]])
 
 vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]])
 
-
 vim.keymap.set('n', 'Q', '<nop>')
 vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
 -- format
-vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
-vim.keymap.set("n", "<leader>ff", '<cmd>silent %!prettier --stdin-filepath %<CR>')
-vim.keymap.set("n", "<leader>fw", '<cmd>silent %!prettier --stdin-filepath %<CR><cmd>write<CR>')
+vim.keymap.set("n", "<leader>f", vim.lsp.buf.format, { desc = '[F]ormat file' })
+-- vim.keymap.set("n", "<leader>ff", '<cmd>silent %!prettierd --stdin-filepath %<CR>')
+-- vim.keymap.set("n", "<leader>fw", '<cmd>silent %!prettierd --stdin-filepath %<CR><cmd>write<CR>', { desc = '[F]ormat and [W]rite file' })
+vim.keymap.set("n", "<leader>fw", '<cmd>EslintFixAll<CR><cmd>write<CR>', { desc = '[F]ormat and [W]rite file' })
 
 -- [[ autoformat on save ]]
 -- vim.cmd [[autocmd BufWritePre * lua vim.lsp.buf.format()]]
@@ -515,6 +516,7 @@ end)
 
 -- [[ Harpoon ]]
 vim.keymap.set('n', '<leader>ha', require('harpoon.mark').add_file, { desc = '[H]arpoon - [A]dd file' })
+vim.keymap.set('n', '<leader>hr', require('harpoon.mark').rm_file, { desc = '[H]arpoon - [R]emove file' })
 vim.keymap.set('n', '<leader>hn', require('harpoon.ui').nav_next, { desc = '[H]arpoon - [N]ext file' })
 vim.keymap.set('n', '<leader>hm', require('harpoon.ui').nav_prev, { desc = '[H]arpoon - [P]revious file' })
 vim.keymap.set('n', '<leader>hf', '<Cmd>Telescope harpoon marks<CR>', { desc = '[H]arpoon - [F]ind files' })
@@ -635,92 +637,95 @@ vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnos
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
 
--- [[ Configure null-ls ]]
-local null_ls = require("null-ls")
+-- [[ Configure typescript-tools ]]
+require("typescript-tools").setup {}
 
-local group = vim.api.nvim_create_augroup("lsp_format_on_save", { clear = false })
-local event = "BufWritePre" -- or "BufWritePost"
-local async = event == "BufWritePost"
+-- [[ Configure null-ls ]]
+-- local null_ls = require("null-ls")
+--
+-- local group = vim.api.nvim_create_augroup("lsp_format_on_save", { clear = false })
+-- local event = "BufWritePre" -- or "BufWritePost"
+-- local async = event == "BufWritePost"
 -- local formatter = null_ls.builtins.formatting
 -- local diagnostics = null_ls.builtins.diagnostics
 -- local actions = null_ls.builtins.code_actions
-
-null_ls.setup({
-  -- sources = {
-  --   -- Formatters
-  --   formatter.eslint_d,
-  --
-  --   -- Diagnostics
-  --   diagnostics.eslint_d,
-  --
-  --   -- Code actions
-  --   actions.eslint_d,
-  --
-  --   formatter.prettierd.with({
-  --     filetypes = {
-  --       "css",
-  --       "html",
-  --       "yaml",
-  --       "markdown",
-  --       "json",
-  --       "javascript",
-  --       "javascriptreact",
-  --       "typescript",
-  --       "typescriptreact",
-  --     },
-  --     args = {
-  --       "--stdin-filepath",
-  --       "$FILENAME",
-  --     }
-  --   }),
-  -- },
-
-  on_attach = function(client, bufnr)
-  if client.supports_method("textDocument/formatting") then
-      vim.keymap.set("n", "<Leader>f", function()
-        vim.lsp.buf.format({ bufnr = vim.api.nvim_get_current_buf() })
-      end, { buffer = bufnr, desc = "[lsp] format" })
-
-      -- format on save
-      vim.api.nvim_clear_autocmds({ buffer = bufnr, group = group })
-      vim.api.nvim_create_autocmd(event, {
-        buffer = bufnr,
-        group = group,
-        callback = function()
-          vim.lsp.buf.format({ bufnr = bufnr, async = async })
-        end,
-        desc = "[lsp] format on save",
-      })
-    end
-
-    if client.supports_method("textDocument/rangeFormatting") then
-      vim.keymap.set("x", "<Leader>f", function()
-        vim.lsp.buf.format({ bufnr = vim.api.nvim_get_current_buf() })
-      end, { buffer = bufnr, desc = "[lsp] format" })
-    end
-  end,
-})
+--
+-- null_ls.setup({
+--   sources = {
+--     -- Formatters
+--     formatter.eslint_d,
+--
+--     -- Diagnostics
+--     diagnostics.eslint_d,
+--
+--     -- Code actions
+--     actions.eslint_d,
+--
+--     formatter.prettierd.with({
+--       filetypes = {
+--         "css",
+--         "html",
+--         "yaml",
+--         "markdown",
+--         "json",
+--         "javascript",
+--         "javascriptreact",
+--         "typescript",
+--         "typescriptreact",
+--       },
+--       args = {
+--         "--stdin-filepath",
+--         "$FILENAME",
+--       }
+--     }),
+--   },
+--
+--   -- on_attach = function(client, bufnr)
+--   --   if client.supports_method("textDocument/formatting") then
+--   --     vim.keymap.set("n", "<Leader>f", function()
+--   --       vim.lsp.buf.format({ bufnr = vim.api.nvim_get_current_buf() })
+--   --     end, { buffer = bufnr, desc = "[lsp] format" })
+--   --
+--   --     -- format on save
+--   --     vim.api.nvim_clear_autocmds({ buffer = bufnr, group = group })
+--   --     vim.api.nvim_create_autocmd(event, {
+--   --       buffer = bufnr,
+--   --       group = group,
+--   --       callback = function()
+--   --         vim.lsp.buf.format({ bufnr = bufnr, async = async })
+--   --       end,
+--   --       desc = "[lsp] format on save",
+--   --     })
+--   --   end
+--   --
+--   --   if client.supports_method("textDocument/rangeFormatting") then
+--   --     vim.keymap.set("x", "<Leader>f", function()
+--   --       vim.lsp.buf.format({ bufnr = vim.api.nvim_get_current_buf() })
+--   --     end, { buffer = bufnr, desc = "[lsp] format" })
+--   --   end
+--   -- end,
+-- })
 
 -- [[ Configure prettier.nvim ]]
-local prettier = require("prettier")
-
-prettier.setup({
-  bin = 'prettierd', -- or `'prettierd'` (v0.23.3+)
-  filetypes = {
-    "css",
-    "graphql",
-    "html",
-    "javascript",
-    "javascriptreact",
-    "json",
-    "less",
-    "markdown",
-    "scss",
-    "typescript",
-    "typescriptreact",
-    "yaml",
-  },
-})
+-- local prettier = require("prettier")
+--
+-- prettier.setup({
+--   bin = 'prettierd', -- or `'prettierd'` (v0.23.3+)
+--   filetypes = {
+--     "css",
+--     "graphql",
+--     "html",
+--     "javascript",
+--     "javascriptreact",
+--     "json",
+--     "less",
+--     "markdown",
+--     "scss",
+--     "typescript",
+--     "typescriptreact",
+--     "yaml",
+--   },
+-- })
 
 -- [[ Configure LSP ]]
 --  This function gets run when an LSP connects to a particular buffer.
@@ -791,8 +796,9 @@ local servers = {
   -- gopls = {},
   -- pyright = {},
   -- rust_analyzer = {},
-  tsserver = {},
-  html = { filetypes = { 'html', 'twig', 'hbs'} },
+  eslint = {},
+  -- tsserver = {},
+  html = { filetypes = { 'html', 'twig', 'hbs' } },
 
   lua_ls = {
     Lua = {
